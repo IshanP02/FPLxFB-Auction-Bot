@@ -15,8 +15,7 @@ const client = new Client({
 
 eventHandler(client);
 
-//update token
-//client.login(process.env.TOKEN);
+client.login(process.env.TOKEN);
 
 client.on('ready', (c) => {
     console.log(`${c.user.tag} is online.`);
