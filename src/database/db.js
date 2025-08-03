@@ -16,11 +16,20 @@ async function setupDatabase() {
     );
     `;
 
-    const createPlayersTable = `
-    CREATE TABLE IF NOT EXISTS players (
+    const createUndraftedPlayersTable = `
+    CREATE TABLE IF NOT EXISTS undraftedplayers (
         id INT AUTO_INCREMENT PRIMARY KEY,
         player_name VARCHAR(255),
         role VARCHAR(255)
+    );
+    `;
+
+    const createDraftedPlayersTable = `
+    CREATE TABLE IF NOT EXISTS draftedplayers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        player_name VARCHAR(255),
+        role VARCHAR(255),
+        points INT
     );
     `;
 
@@ -36,11 +45,17 @@ async function setupDatabase() {
         // await dbconnection.query(`DROP TABLE IF EXISTS teams`);
         // console.log("Table 'teams' dropped.");
 
-        await dbconnection.query(createPlayersTable);
-        console.log("Table 'players' created or already exists.");
+        await dbconnection.query(createUndraftedPlayersTable);
+        console.log("Table 'undraftedplayers' created or already exists.");
 
-        // await dbconnection.query(`DROP TABLE IF EXISTS players`);
-        // console.log("Table 'players' dropped.");
+        // await dbconnection.query(`DROP TABLE IF EXISTS undraftedplayers`);
+        // console.log("Table 'undraftedplayers' dropped.");
+
+        await dbconnection.query(createDraftedPlayersTable);
+        console.log("Table 'draftedplayers' created or already exists.");
+
+        // await dbconnection.query(`DROP TABLE IF EXISTS draftedplayers`);
+        // console.log("Table 'draftedplayers' dropped.");
 
         console.log("Database setup complete.");
     } catch (err) {
