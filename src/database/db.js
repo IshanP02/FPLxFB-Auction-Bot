@@ -6,7 +6,7 @@ async function setupDatabase() {
     CREATE TABLE IF NOT EXISTS teams (
         id INT AUTO_INCREMENT PRIMARY KEY,
         team_name VARCHAR(255),
-        role_id VARCHAR(255),
+        disc_role_id VARCHAR(255),
         top VARCHAR(255),
         jungle VARCHAR(255),
         mid VARCHAR(255),
@@ -33,6 +33,15 @@ async function setupDatabase() {
     );
     `;
 
+    const currentProposalTable = `
+    CREATE TABLE IF NOT EXISTS currentproposal (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        player_name VARCHAR(255),
+        team_name VARCHAR(255),
+        current_bid INT
+    );
+    `;
+
     try {
         console.log("Setting up the database...");
 
@@ -56,6 +65,12 @@ async function setupDatabase() {
 
         // await dbconnection.query(`DROP TABLE IF EXISTS draftedplayers`);
         // console.log("Table 'draftedplayers' dropped.");
+
+        await dbconnection.query(currentProposalTable);
+        console.log("Table 'currentproposal' created or already exists.");
+
+        // await dbconnection.query(`DROP TABLE IF EXISTS currentproposal`);
+        // console.log("Table 'currentproposal' dropped.");
 
         console.log("Database setup complete.");
     } catch (err) {
