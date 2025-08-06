@@ -1,10 +1,5 @@
-/**
- * Adds a player to the draftedplayers table and removes them from the undraftedplayers table.
- * @param {string} playerName - The name of the player to draft.
- * @param {string} role - The role of the player (e.g., 'top', 'jungle').
- * @param {number} points - The points spent to draft the player.
- * @returns {Promise<boolean>} True if successful, false otherwise.
- */
+const teamInfo = require('./getTeamsInfo');
+
 async function draftPlayer(playerName, role, points) {
     try {
         // Add player to draftedplayers table
@@ -18,6 +13,9 @@ async function draftPlayer(playerName, role, points) {
             'DELETE FROM undraftedplayers WHERE player_name = ?',
             [playerName]
         );
+
+        // Update team points
+        await teamInfo.updateTeamPoints(role, points);
 
         return true;
     } catch (error) {

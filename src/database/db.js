@@ -37,7 +37,7 @@ async function setupDatabase() {
     CREATE TABLE IF NOT EXISTS currentproposal (
         id INT AUTO_INCREMENT PRIMARY KEY,
         player_name VARCHAR(255),
-        team_name VARCHAR(255),
+        team_id VARCHAR(255),
         current_bid INT
         status VARCHAR(255) DEFAULT 'sold'
     );
