@@ -185,19 +185,6 @@ async function promptNextTeam(client) {
         'SELECT * FROM currentproposal ORDER BY id DESC LIMIT 1'
     );
 
-    let round;
-    if (latestProposal[0].id >= 1 && latestProposal[0].id <= 12) {
-        round = 1;
-    } else if (latestProposal[0].id >= 13 && latestProposal[0].id <= 24) {
-        round = 2;
-    } else if (latestProposal[0].id >= 25 && latestProposal[0].id <= 36) {
-        round = 3;
-    } else if (latestProposal[0].id >= 37 && latestProposal[0].id <= 48) {
-        round = 4;
-    } else if (latestProposal[0].id >= 49 && latestProposal[0].id <= 60) {
-        round = 5;
-    }
-
     const roleIds = [
         '1391486538432643212',
         '1393291712272797706',
@@ -217,10 +204,12 @@ async function promptNextTeam(client) {
     let roleIdToPing;
 
     let index;
+    let nextId = latestProposal[0].id + 1;
+    let round = Math.ceil(nextId / roleIds.length);
     if (round % 2 === 1) {
-        index = (latestProposal[0].id - 1) % roleIds.length;
+        index = (nextId - 1) % roleIds.length;
     } else {
-        index = roleIds.length - 1 - ((latestProposal[0].id - 1) % roleIds.length);
+        index = roleIds.length - 1 - ((nextId - 1) % roleIds.length);
     }
     roleIdToPing = roleIds[index];
 
@@ -234,7 +223,7 @@ async function promptNextTeam(client) {
         );
         await promptNextTeam(client);
     }
-    else if (latestProposal[0].id >= 60) {
+    else if (latestProposal[0].id > 60) {
         await auctionChan.send(`All teams have filled their rosters or the maximum number of rounds has been reached. The auction is now complete! 🎉`);
     }
     else if (latestProposal[0].id === 8) {
