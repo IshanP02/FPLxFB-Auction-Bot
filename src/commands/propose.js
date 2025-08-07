@@ -43,7 +43,7 @@ module.exports = {
                 [playerName, teamId, startingBid, 'open']
             );
 
-            allowCommand = await liveauction.promptNextTeam(interaction.client);
+            allowCommand = await liveauction.promptNextTeam(client);
 
         }
     

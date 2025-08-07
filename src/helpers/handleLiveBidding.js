@@ -121,6 +121,39 @@ async function liveAuctionHandler(client) {
 
     draft.draftPlayer(currentBid.player_name, teamId, bid);
 
+    const [draftedPlayer] = await dbconnection.query(
+        'SELECT * FROM draftedplayers WHERE player_name = ?',
+        [currentBid.player_name]
+    );
+
+    if (draftedPlayer && draftedPlayer.role) {
+        const role = draftedPlayer.role;
+
+        const teams = await dbconnection.query('SELECT id FROM team');
+        const allTeamIds = teams.map(row => row.id);
+
+        const teamsWithRole = await dbconnection.query(
+            'SELECT team_id FROM draftedplayers WHERE role = ?',
+            [role]
+        );
+        const teamsWithRoleSet = new Set(teamsWithRole.map(row => row.team_id));
+        const missingTeamIds = allTeamIds.filter(id => !teamsWithRoleSet.has(id));
+
+        if (missingTeamIds.length === 1) {
+            const missingTeamId = missingTeamIds[0];
+            const [remainingPlayer] = await dbconnection.query(
+                'SELECT player_name FROM undraftedplayers WHERE role = ?',
+                [role]
+            );
+            const remainingPlayerName = remainingPlayer.player_name;
+            await draft.draftPlayer(remainingPlayerName, missingTeamId, 1);
+
+            await auctionChan.send(
+                `🛠️ Only one team left missing a player for role **${role}**. Player **${remainingPlayerName}** automatically assigned to Team **${conversions.convertRoleIdToName([missingTeamId])}**!`
+            );
+        }
+    }
+
     return true;
 }
 
