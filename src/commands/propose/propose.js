@@ -1,8 +1,8 @@
 require('dotenv').config();
-const conversions = require('../helpers/roleConversions');
-const validation = require('../helpers/validateProposalOrBid');
-const liveauction = require('../helpers/handleLiveBidding');
-const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
+const conversions = require('../../helpers/roleConversions');
+const validation = require('../../helpers/validateProposalOrBid');
+const liveauction = require('../../helpers/handleLiveBidding');
+const { ApplicationCommandOptionType } = require('discord.js');
 const dbconnection = require('../../database/dbconnection');
 
 module.exports = {

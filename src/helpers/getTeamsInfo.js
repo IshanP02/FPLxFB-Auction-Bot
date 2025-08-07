@@ -1,10 +1,10 @@
-const dbconnection = require('../../database/dbconnection');
+const dbconnection = require('../database/dbconnection');
 
 module.exports = {
     getTeamPoints: async function (id) {
         try {
-            const rows = await dbconnection.query(`SELECT points FROM teams WHERE id = ?`, id);
-            return rows[points];
+            const rows = await dbconnection.query(`SELECT points FROM teams WHERE disc_role_id = ?`, id);
+            return rows[0].points;
         } catch (error) {
             console.error('Error fetching teams from database:', error);
             throw error;
@@ -13,7 +13,7 @@ module.exports = {
 
     getTeamById: async function (id) {
         try {
-            const rows = await dbconnection.query(`SELECT * FROM teams WHERE id = ?`, id);
+            const rows = await dbconnection.query(`SELECT * FROM teams WHERE disc_role_id = ?`, id);
             return rows;
         } catch (error) {
             console.error('Error fetching teams from database:', error);
@@ -23,7 +23,7 @@ module.exports = {
 
     getTeamRoleSlot: async function (id, role) {
         try {
-            const rows = await dbconnection.query(`SELECT * FROM teams WHERE id = ?`, id);
+            const rows = await dbconnection.query(`SELECT * FROM teams WHERE disc_role_id = ?`, id);
             return rows[role.toLowerCase()];
         } catch (error) {
             console.error('Error fetching teams from database:', error);
@@ -33,7 +33,7 @@ module.exports = {
 
     countEmptyRoles: async function (teamId) {
         try {
-            const rows = await dbconnection.query(`SELECT top, jungle, mid, bot, supp FROM teams WHERE id = ?`, teamId);
+            const rows = await dbconnection.query(`SELECT top, jungle, mid, bot, supp FROM teams WHERE disc_role_id = ?`, teamId);
             if (!rows || rows.length === 0) return 5;
             const team = rows[0];
             const roles = ['top', 'jungle', 'mid', 'bot', 'support'];
@@ -50,7 +50,7 @@ module.exports = {
 
     updateTeamPoints: async function (teamId, points) {
         try {
-            await dbconnection.query(`UPDATE teams SET points = points - ? WHERE id = ?`, [points, teamId]);
+            await dbconnection.query(`UPDATE teams SET points = points - ? WHERE disc_role_id = ?`, [points, teamId]);
         } catch (error) {
             console.error('Error updating team points:', error);
             throw error;

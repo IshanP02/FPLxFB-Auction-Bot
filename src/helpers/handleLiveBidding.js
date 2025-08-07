@@ -1,5 +1,5 @@
 const validation = require('./validateProposalOrBid');
-const dbconnection = require('../../database/dbconnection');
+const dbconnection = require('../database/dbconnection');
 const conversions = require('./roleConversions');
 const draft = require('./draftPlayer');
 require('dotenv').config();
@@ -129,7 +129,7 @@ async function liveAuctionHandler(client) {
     if (draftedPlayer && draftedPlayer.role) {
         const role = draftedPlayer.role;
 
-        const teams = await dbconnection.query('SELECT id FROM team');
+        const teams = await dbconnection.query('SELECT disc_role_id FROM teams');
         const allTeamIds = teams.map(row => row.id);
 
         const teamsWithRole = await dbconnection.query(

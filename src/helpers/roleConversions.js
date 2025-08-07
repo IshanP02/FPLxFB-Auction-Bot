@@ -1,3 +1,5 @@
+const dbconnection = require('../database/dbconnection');
+
 function convertRoleIdToName(roleIds) {
 
     const roleMapping = {
@@ -22,7 +24,7 @@ function convertRoleIdToName(roleIds) {
 
 async function getTeamIdFromName(teamName) {
     try {
-        const rows = await dbconnection.query(`SELECT id FROM teams WHERE team_name = ?`, [teamName]);
+        const rows = await dbconnection.query(`SELECT disc_role_id FROM teams WHERE team_name = ?`, [teamName]);
         if (rows.length > 0) {
             return rows[0].id;
         }

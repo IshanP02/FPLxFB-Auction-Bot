@@ -1,4 +1,4 @@
-const dbconnection = require('../../database/dbconnection');
+const dbconnection = require('../database/dbconnection');
 const teamInfo = require('./getTeamsInfo');
 
 async function validateProposalOrBid(playerName, teamId, bid) {

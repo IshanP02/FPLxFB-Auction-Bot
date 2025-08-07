@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
 const dbconnection = require('../../database/dbconnection');
-const liveauction = require('../helpers/handleLiveBidding');
+const liveauction = require('../../helpers/handleLiveBidding');
 
 
 module.exports = {
@@ -28,6 +28,6 @@ module.exports = {
 
     },
 
-    name: 'startAuction',
+    name: 'start-auction',
     description: 'Begin the auction draft'
 }

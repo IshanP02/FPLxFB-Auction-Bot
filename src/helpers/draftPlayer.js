@@ -1,4 +1,5 @@
 const teamInfo = require('./getTeamsInfo');
+const dbconnection = require('../database/dbconnection');
 
 async function draftPlayer(playerName, teamId, points) {
     try {
