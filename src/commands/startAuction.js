@@ -6,7 +6,7 @@ const liveauction = require('../helpers/handleLiveBidding');
 
 module.exports = {
 
-    callback: async (interaction) => {
+    callback: async (client, interaction) => {
 
         const allowedChannelId = process.env.AUCTION_CHAN_ID;
         if (interaction.channel.id !== allowedChannelId) {

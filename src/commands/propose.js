@@ -7,7 +7,7 @@ const dbconnection = require('../../database/dbconnection');
 
 module.exports = {
 
-    callback: async (interaction) => {
+    callback: async (client, interaction) => {
 
         allowCommand = true;
 
