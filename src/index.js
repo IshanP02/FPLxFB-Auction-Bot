@@ -4,6 +4,7 @@ const eventHandler = require('./handlers/eventHandler');
 
 require('./database/db');
 
+
 const client = new Client({
     intents: [
         IntentsBitField.Flags.Guilds,

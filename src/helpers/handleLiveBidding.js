@@ -12,13 +12,13 @@ async function liveAuctionHandler(client) {
 
     if (!currentBid) {
         console.log('No active auction found.');
-        return;
+        return false;
     }
 
     const auctionChan = client.channels.cache.get(process.env.AUCTION_CHAN_ID);
     if (!auctionChan) {
         console.log('Auction channel not found.');
-        return;
+        return false;
     }
 
     await auctionChan.send(`💥 **Bidding Started!** 💥\nPlayer: **${currentBid.player_name}**\nCurrent Bid: **${currentBid.current_bid}** by Team ID: **${currentBid.team_id}**`);
@@ -120,6 +120,35 @@ async function liveAuctionHandler(client) {
     });
 
     draft.draftPlayer(currentBid.player_name, teamId, bid);
+
+    return true;
 }
 
-module.exports = { liveAuctionHandler };
+async function promptNextTeam(client) {
+
+    const [latestProposal] = await dbconnection.query(
+        'SELECT * FROM currentproposal ORDER BY id DESC LIMIT 1'
+    );
+    const teamId = latestProposal.team_id;
+
+    let round;
+    if (latestProposal.id >= 0 && latestProposal.id <= 9) {
+        round = 1;
+    } else if (latestProposal.id >= 10 && latestProposal.id <= 19) {
+        round = 2;
+    } else if (latestProposal.id >= 20 && latestProposal.id <= 29) {
+        round = 3;
+    } else if (latestProposal.id >= 30 && latestProposal.id <= 39) {
+        round = 4;
+    } else if (latestProposal.id >= 40 && latestProposal.id <= 49) {
+        round = 5;
+    }
+
+    auctionChan = client.channels.cache.get(process.env.AUCTION_CHAN_ID);
+    userIdToPing = 125395426948939776; // temp hardcode
+    await auctionChan.send(`It's your turn to propose a player, <@${userIdToPing}>!`);
+
+    return liveAuctionHandler(client);
+}
+
+module.exports = { liveAuctionHandler, promptNextTeam };

@@ -1,7 +1,7 @@
 require('dotenv').config();
-const conversions = require('./helpers/roleConversions');
-const validation = require('./helpers/validateProposalOrBid');
-const liveauction = require('./helpers/handleLiveBidding');
+const conversions = require('../helpers/roleConversions');
+const validation = require('../helpers/validateProposalOrBid');
+const liveauction = require('../helpers/handleLiveBidding');
 const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
 const dbconnection = require('../../database/dbconnection');
 
@@ -9,29 +9,44 @@ module.exports = {
 
     callback: async (interaction) => {
 
-        const playerName = interaction.options.getString('player');
-        const startingBid = interaction.options.getInteger('starting_bid');
-        const userId = interaction.member.id;
-        const user = await client.users.fetch(interaction.member.id);
-        const roles = interaction.member.roles.cache.map(role => role.id);
+        allowCommand = true;
 
-        const teamName = conversions.convertRoleIdToName(roles);
+        while (allowCommand) {
 
-        const teamId = await conversions.getTeamIdFromName(teamName);
+            allowCommand = false;
 
-        validProposal = await validation.validateProposalOrBid(playerName, teamId, startingBid);
+            const allowedChannelId = process.env.AUCTION_CHAN_ID;
+            if (interaction.channel.id !== allowedChannelId) {
+                return interaction.reply({
+                    content: `🚫 This command can only be used in <#${allowedChannelId}>.`,
+                    ephemeral: true
+                });
+            }
 
-        if (!validProposal.valid) {
-            await interaction.reply({ content: `Invalid proposal: ${validProposal.reason}`, ephemeral: true });
-            return;
+            const playerName = interaction.options.getString('player');
+            const startingBid = interaction.options.getInteger('starting_bid');
+            const roles = interaction.member.roles.cache.map(role => role.id);
+
+            const teamName = conversions.convertRoleIdToName(roles);
+
+            const teamId = await conversions.getTeamIdFromName(teamName);
+
+            validProposal = await validation.validateProposalOrBid(playerName, teamId, startingBid);
+
+            if (!validProposal.valid) {
+                await interaction.reply({ content: `Invalid proposal: ${validProposal.reason}`, ephemeral: true });
+                return;
+            }
+
+            await dbconnection.query(
+                'INSERT INTO currentproposal (player_name, team_id, current_bid, status) VALUES (?, ?, ?, ?)',
+                [playerName, teamId, startingBid, 'open']
+            );
+
+            allowCommand = await liveauction.promptNextTeam(interaction.client);
+
         }
-
-        await dbconnection.query(
-            'INSERT INTO currentproposal (player_name, team_id, current_bid, status) VALUES (?, ?, ?, ?)',
-            [playerName, teamId, startingBid, 'open']
-        );
-
-        liveauction.liveAuctionHandler(client);      
+    
 
     },
 
