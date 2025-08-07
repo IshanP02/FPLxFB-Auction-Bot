@@ -12,9 +12,9 @@ async function validateProposalOrBid(playerName, teamId, bid) {
             return { valid: false, reason: 'Player not found or already drafted.' };
         }
 
-        var roleAvailable = await checkRoleAvailability(teamId, undrafted[0].position);
+        var roleAvailable = await checkRoleAvailability(teamId, undrafted[0].role);
         if (!roleAvailable) {
-            return { valid: false, reason: `No available slots for role: ${undrafted[0].position}` };
+            return { valid: false, reason: `No available slots for role: ${undrafted[0].role}` };
         }
 
         var pointsAvailable = await checkPointsAvailability(teamId, bid);
@@ -64,8 +64,8 @@ module.exports = { validateProposalOrBid };
 
 async function checkRoleAvailability(teamId, role) {
     try {
-        const [slot] = await teamInfo.getTeamRoleSlot(teamId, role);
-        if (slot.length === 0) {
+        const slot = await teamInfo.getTeamRoleSlot(teamId, role);
+        if (!slot) {
             return true
         } else {
             return false
@@ -78,7 +78,12 @@ async function checkRoleAvailability(teamId, role) {
 
 async function checkPointsAvailability(teamId, bid) {
     try {
+        console.log(bid);
         const points = await teamInfo.getTeamPoints(teamId);
+
+        //TO-DO POINTS ARE NULL FOR SOME REASON IDK WHY AHHHHHHHHHHHHHHHHH FIX IT FIX IT FIX IT FIX IT
+
+        console.log(points);
         const emptyRoles = await teamInfo.countEmptyRoles(teamId);
 
         if (points >= bid + emptyRoles) {

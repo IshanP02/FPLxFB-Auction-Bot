@@ -12,7 +12,10 @@ function convertRoleIdToName(roleIds) {
         '1393291717226139649': 'Legacy',
         '1393291721949057226': 'DoG',
         '1393291724259856384': 'XSV',
-        '1393291719771951246': 'DNE',       
+        '1393291719771951246': 'DNE',
+        '1393291712272797706': 'ID',
+        '1393291714822799522': 'DA',
+
     };
     for (const roleId of roleIds) {
         if (roleMapping[roleId]) {
@@ -26,7 +29,7 @@ async function getTeamIdFromName(teamName) {
     try {
         const rows = await dbconnection.query(`SELECT disc_role_id FROM teams WHERE team_name = ?`, [teamName]);
         if (rows.length > 0) {
-            return rows[0].id;
+            return rows[0][0].disc_role_id;
         }
     } catch (error) {
         console.error('Error fetching team ID:', error);
