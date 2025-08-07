@@ -22,10 +22,6 @@ module.exports = {
 
         liveauction.promptNextTeam(client);
 
-        // - tracking who's turn it is to propose a player
-        //If I do that, all this class has to do is call that method to start the draft and trigger everything else
-        // - prompt the first team to propose a player
-
     },
 
     name: 'start-auction',
