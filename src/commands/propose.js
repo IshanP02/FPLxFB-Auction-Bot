@@ -1,6 +1,7 @@
 require('dotenv').config();
 const conversions = require('./helpers/roleConversions');
 const validation = require('./helpers/validateProposalOrBid');
+const liveauction = require('./helpers/handleLiveBidding');
 const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
 const dbconnection = require('../../database/dbconnection');
 
@@ -25,25 +26,12 @@ module.exports = {
             return;
         }
 
-        const proposalEmbed = new EmbedBuilder()
-            .setTitle('New proposal!')
-            .setDescription(`${user.username}`)
-            .setColor('Green')
-            .addFields({
-                name: 'Player',
-                value: `${playerName}`,
-                inline: true,
-            })
-            .addFields({
-                name: 'Team',
-                value: `${teamName}`,
-                inline: true,
-            });
+        await dbconnection.query(
+            'INSERT INTO currentproposal (player_name, team_id, current_bid, status) VALUES (?, ?, ?, ?)',
+            [playerName, teamId, startingBid, 'open']
+        );
 
-        const auctionChan = client.channels.cache.find(channel => channel.id === process.env.AUCTION_CHAN_ID);
-
-        await auctionChan.send({ embeds: [proposalEmbed] });
-        
+        liveauction.liveAuctionHandler(client);      
 
     },
 

@@ -39,7 +39,7 @@ async function setupDatabase() {
         player_name VARCHAR(255),
         team_id VARCHAR(255),
         current_bid INT
-        status VARCHAR(255) DEFAULT 'sold'
+        status VARCHAR(255) DEFAULT 'closed'
     );
     `;
 

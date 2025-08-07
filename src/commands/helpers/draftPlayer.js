@@ -1,11 +1,18 @@
 const teamInfo = require('./getTeamsInfo');
 
-async function draftPlayer(playerName, role, points) {
+async function draftPlayer(playerName, teamId, points) {
     try {
+
+        //Get player role from undraftedplayers table
+        const [playerRows] = await dbconnection.query(
+            'SELECT role FROM undraftedplayers WHERE player_name = ?',
+            [playerName]
+        );
+        
         // Add player to draftedplayers table
         await dbconnection.query(
             'INSERT INTO draftedplayers (player_name, role, points) VALUES (?, ?, ?)',
-            [playerName, role, points]
+            [playerName, playerRows[0].role, points]
         );
 
         // Remove player from undraftedplayers table
@@ -15,7 +22,7 @@ async function draftPlayer(playerName, role, points) {
         );
 
         // Update team points
-        await teamInfo.updateTeamPoints(role, points);
+        await teamInfo.updateTeamPoints(teamId, points);
 
         return true;
     } catch (error) {
