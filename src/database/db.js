@@ -29,7 +29,8 @@ async function setupDatabase() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         player_name VARCHAR(255),
         role VARCHAR(255),
-        points INT
+        points INT,
+        team_id VARCHAR(255)
     );
     `;
 
@@ -38,7 +39,7 @@ async function setupDatabase() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         player_name VARCHAR(255),
         team_id VARCHAR(255),
-        current_bid INT,
+        current_bid INT DEFAULT 0,
         status VARCHAR(255) DEFAULT 'closed'
     );
     `;

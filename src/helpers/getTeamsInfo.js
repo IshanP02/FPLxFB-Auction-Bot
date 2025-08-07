@@ -4,7 +4,7 @@ module.exports = {
     getTeamPoints: async function (id) {
         try {
             const rows = await dbconnection.query(`SELECT points FROM teams WHERE disc_role_id = ?`, id);
-            return rows[0].points;
+            return rows[0][0].points;
         } catch (error) {
             console.error('Error fetching teams from database:', error);
             throw error;

@@ -3,7 +3,8 @@ const { Client, IntentsBitField, ActivityType } = require('discord.js');
 const eventHandler = require('./handlers/eventHandler');
 
 require('./database/db');
-
+require('./imports/importEmptyTeams');
+require('./imports/importPlayers');
 
 const client = new Client({
     intents: [

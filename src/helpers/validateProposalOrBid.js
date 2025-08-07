@@ -1,7 +1,7 @@
 const dbconnection = require('../database/dbconnection');
 const teamInfo = require('./getTeamsInfo');
 
-async function validateProposalOrBid(playerName, teamId, bid) {
+async function validateProposalOrBid(playerName, teamId, bid, type) {
     try {
         
         const [undrafted] = await dbconnection.query(
@@ -22,24 +22,27 @@ async function validateProposalOrBid(playerName, teamId, bid) {
             return { valid: false, reason: `Not enough points to cover bid and minimum required points for remaining slots.` };
         }
 
-        currentBid = dbconnection.query(
+        currentBid = await dbconnection.query(
             'SELECT * FROM currentproposal WHERE status = ?',
             ['open']
         );
-        if (currentBid.length > 0 && bid <= currentBid[0].current_bid) {
-            return { valid: false, reason: `Bid must be higher than the current bid of ${currentBid[0].current_bid}.` };
+
+        if (currentBid && type === "bid") {
+            if (bid <= currentBid[0][0].current_bid) {
+                return { valid: false, reason: `Bid must be higher than the current bid of ${currentBid[0][0].current_bid}.` };
+            }
         }
 
         let round;
-        if (currentBid[0].id >= 0 && currentBid[0].id <= 9) {
+        if (currentBid[0].id >= 0 && currentBid[0].id <= 11) {
             round = 1;
-        } else if (currentBid[0].id >= 10 && currentBid[0].id <= 19) {
+        } else if (currentBid[0].id >= 12 && currentBid[0].id <= 23) {
             round = 2;
-        } else if (currentBid[0].id >= 20 && currentBid[0].id <= 29) {
+        } else if (currentBid[0].id >= 24 && currentBid[0].id <= 35) {
             round = 3;
-        } else if (currentBid[0].id >= 30 && currentBid[0].id <= 39) {
+        } else if (currentBid[0].id >= 36 && currentBid[0].id <= 47) {
             round = 4;
-        } else if (currentBid[0].id >= 40 && currentBid[0].id <= 49) {
+        } else if (currentBid[0].id >= 48 && currentBid[0].id <= 59) {
             round = 5;
         }
 
@@ -78,15 +81,14 @@ async function checkRoleAvailability(teamId, role) {
 
 async function checkPointsAvailability(teamId, bid) {
     try {
-        console.log(bid);
         const points = await teamInfo.getTeamPoints(teamId);
 
-        //TO-DO POINTS ARE NULL FOR SOME REASON IDK WHY AHHHHHHHHHHHHHHHHH FIX IT FIX IT FIX IT FIX IT
-
-        console.log(points);
         const emptyRoles = await teamInfo.countEmptyRoles(teamId);
+        console.log(emptyRoles);
+        console.log(points);
+        console.log(bid);
 
-        if (points >= bid + emptyRoles) {
+        if (Number(points) >= Number(bid) + Number(emptyRoles)) {
             return true;
         } else {
             return false;
