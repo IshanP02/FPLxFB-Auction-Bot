@@ -18,9 +18,9 @@ module.exports = {
 
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: 'You can\'t do that', ephemeral: true });
 
-        await interaction.reply({ content: 'Auction draft started! Teams can now propose players using /propose', ephemeral: true });
+        await interaction.reply({ content: '**Auction draft started!** Teams can now propose players using /propose'});
 
-        liveauction.promptNextTeam(client);
+        liveauction.promptNextTeam(client, true);
 
     },
 

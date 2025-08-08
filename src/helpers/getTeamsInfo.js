@@ -59,6 +59,18 @@ module.exports = {
             console.error('Error updating team points:', error);
             throw error;
         }
+    },
+
+    getRoleFromName: async function (playerName) {
+        try {
+            const rows = await dbconnection.query(`SELECT role FROM undraftedplayers WHERE player_name = ?`, [playerName]);
+            if (rows.length > 0) {
+                return rows[0][0].role;
+            }
+        } catch (error) {
+            console.error('Error fetching role from player name:', error);
+        }
+        return null;
     }
 
 }

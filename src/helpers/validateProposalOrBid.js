@@ -84,9 +84,6 @@ async function checkPointsAvailability(teamId, bid) {
         const points = await teamInfo.getTeamPoints(teamId);
 
         const emptyRoles = await teamInfo.countEmptyRoles(teamId);
-        console.log(emptyRoles);
-        console.log(points);
-        console.log(bid);
 
         if (Number(points) >= Number(bid) + Number(emptyRoles)) {
             return true;

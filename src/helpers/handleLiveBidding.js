@@ -179,11 +179,7 @@ async function liveAuctionHandler(client) {
     return true;
 }
 
-async function promptNextTeam(client) {
-
-    const [latestProposal] = await dbconnection.query(
-        'SELECT * FROM currentproposal ORDER BY id DESC LIMIT 1'
-    );
+async function promptNextTeam(client, initialBid) {
 
     const roleIds = [
         '1391486538432643212',
@@ -204,7 +200,16 @@ async function promptNextTeam(client) {
     let roleIdToPing;
 
     let index;
-    let nextId = latestProposal[0].id + 1;
+    let nextId;
+    if (initialBid) {
+        nextId = 1
+    }
+    else {
+        const [latestProposal] = await dbconnection.query(
+            'SELECT * FROM currentproposal ORDER BY id DESC LIMIT 1'
+        );
+        nextId = latestProposal[0].id + 1;
+    }
     let round = Math.ceil(nextId / roleIds.length);
     if (round % 2 === 1) {
         index = (nextId - 1) % roleIds.length;
@@ -221,18 +226,18 @@ async function promptNextTeam(client) {
             'INSERT INTO currentproposal (player_name, team_id, current_bid, status) VALUES (?, ?, ?, ?)',
             ['NONE', roleIdToPing, 0, 'closed']
         );
-        await promptNextTeam(client);
+        await promptNextTeam(client, false);
     }
-    else if (latestProposal[0].id > 60) {
+    else if (nextId - 1 > 60) {
         await auctionChan.send(`All teams have filled their rosters or the maximum number of rounds has been reached. The auction is now complete! 🎉`);
     }
-    else if (latestProposal[0].id === 8) {
+    else if (nextId - 1 === 8) {
         await auctionChan.send(`<@&${roleIdToPing}> has already obtained a first round player. Skipping to the next team.`);
         await dbconnection.query(
             'INSERT INTO currentproposal (player_name, team_id, current_bid, status) VALUES (?, ?, ?, ?)',
             ['NONE', roleIdToPing, 0, 'closed']
         );
-        await promptNextTeam(client);
+        await promptNextTeam(client, false);
     }
     else {
         await auctionChan.send(`It's your turn to propose a player, <@&${roleIdToPing}>!`);
@@ -265,7 +270,7 @@ async function draftPlayer(playerName, teamId, points, client) {
             [playerName, teamId]
         );
 
-        await promptNextTeam(client);
+        await promptNextTeam(client, false);
 
         return true;
     } catch (error) {
