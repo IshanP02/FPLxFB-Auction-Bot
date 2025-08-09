@@ -6,6 +6,10 @@ require('dotenv').config();
 
 let collectorEnded;
 
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function liveAuctionHandler(client) {
 
     let idleTimer = null;
@@ -37,7 +41,7 @@ async function liveAuctionHandler(client) {
         return false;
     }
 
-    await auctionChan.send(`💥 **Bidding Started!** 💥\nPlayer: **${currentBid[0].player_name}**\nCurrent Bid: **${currentBid[0].current_bid}** by Team: **${conversions.convertSingleRoleIdToName(currentBid[0].team_id)}**`);
+    await auctionChan.send(`💥 **Bidding Started!** 💥\nPlayer: **${currentBid[0].player_name}** | Role: **${await teamInfo.getRoleFromName(currentBid[0].player_name)}**\nCurrent Bid: **${currentBid[0].current_bid}** by Team: **${conversions.convertSingleRoleIdToName(currentBid[0].team_id)}**`);
     resetIdleTimer();
 
     let teamId = currentBid[0].team_id;
@@ -130,44 +134,12 @@ async function liveAuctionHandler(client) {
 
         if (reason === 'sold') {
             console.log('Player sold after countdown.');
-            draftPlayer(currentBid[0].player_name, teamId, bid, client);
+            draftPlayer(currentBid[0].player_name, teamId, bid, client, false);
+
             await auctionChan.send(`🎉 **Bidding complete!**\nPlayer **${currentBid[0].player_name}** sold to Team **${conversions.convertSingleRoleIdToName(teamId)}** for **${bid}**!`);
         } else {
             console.log(`Collector ended due to: ${reason}`);
             await auctionChan.send(`⚠️ Bidding ended unexpectedly. Reason: ${reason}`);
-        }
-
-        const [draftedPlayer] = await dbconnection.query(
-            'SELECT * FROM draftedplayers WHERE player_name = ?',
-            [currentBid[0].player_name]
-        );
-
-        if (draftedPlayer && draftedPlayer[0].role) {
-            const role = draftedPlayer[0].role;
-
-            const teams = await dbconnection.query('SELECT disc_role_id FROM teams');
-            const allTeamIds = teams.map(row => row.id);
-
-            const teamsWithRole = await dbconnection.query(
-                'SELECT team_id FROM draftedplayers WHERE role = ?',
-                [role]
-            );
-            const teamsWithRoleSet = new Set(teamsWithRole.map(row => row.team_id));
-            const missingTeamIds = allTeamIds.filter(id => !teamsWithRoleSet.has(id));
-
-            if (missingTeamIds.length === 1) {
-                const missingTeamId = missingTeamIds[0];
-                const [remainingPlayer] = await dbconnection.query(
-                    'SELECT player_name FROM undraftedplayers WHERE role = ?',
-                    [role]
-                );
-                const remainingPlayerName = remainingPlayer[0].player_name;
-                await draftPlayer(remainingPlayerName, missingTeamId, 1, client);
-
-                await auctionChan.send(
-                    `🛠️ Only one team left missing a player for role **${role}**. Player **${remainingPlayerName}** automatically assigned to Team **${conversions.convertRoleIdToName([missingTeamId])}**!`
-                );
-            }
         }
 
         await dbconnection.query(
@@ -183,17 +155,17 @@ async function promptNextTeam(client, initialBid) {
 
     const roleIds = [
         '1391486538432643212',
-        '1393291712272797706',
-        '1393291717226139649',
-        '1393291709546500169',
+        // '1393291712272797706',
+        // '1393291717226139649',
+        // '1393291709546500169',
         '1393291693444435978',
         '1393288661935591434',
         '1393291714822799522',
         '1393291719771951246',
-        '1393291706404704307',
-        '1393291721949057226',
+        // '1393291706404704307',
+        // '1393291721949057226',
         '1393291633268621494',
-        '1393291724259856384',
+        // '1393291724259856384',
     ];
 
     const auctionChan = client.channels.cache.get(process.env.AUCTION_CHAN_ID);
@@ -245,7 +217,7 @@ async function promptNextTeam(client, initialBid) {
 
 }
 
-async function draftPlayer(playerName, teamId, points, client) {
+async function draftPlayer(playerName, teamId, points, client, automaticAssignment) {
     try {
 
         const [playerRows] = await dbconnection.query(
@@ -270,7 +242,48 @@ async function draftPlayer(playerName, teamId, points, client) {
             [playerName, teamId]
         );
 
-        await promptNextTeam(client, false);
+        const [currentBid] = await dbconnection.query(
+            'SELECT * FROM currentproposal ORDER BY id DESC LIMIT 1'
+        );
+
+        const [draftedPlayer] = await dbconnection.query(
+            'SELECT * FROM draftedplayers WHERE player_name = ?',
+            [currentBid[0].player_name]
+        );
+
+        const auctionChan = client.channels.cache.get(process.env.AUCTION_CHAN_ID);
+
+        if (draftedPlayer && draftedPlayer[0].role) {
+            const role = draftedPlayer[0].role;
+
+            const [teams] = await dbconnection.query('SELECT disc_role_id FROM teams');
+            const allTeamIds = teams.map(row => row.disc_role_id);
+
+            const [teamsWithRole] = await dbconnection.query(
+                'SELECT team_id FROM draftedplayers WHERE role = ?',
+                [role]
+            );
+            const teamsWithRoleSet = new Set(teamsWithRole.map(row => row.team_id));
+            const missingTeamIds = allTeamIds.filter(id => !teamsWithRoleSet.has(id));
+
+            if (missingTeamIds.length === 1) {
+                const missingTeamId = missingTeamIds[0];
+                const [remainingPlayer] = await dbconnection.query(
+                    'SELECT player_name FROM undraftedplayers WHERE role = ?',
+                    [role]
+                );
+                const remainingPlayerName = remainingPlayer[0].player_name;
+                await draftPlayer(remainingPlayerName, missingTeamId, 1, client, true);
+
+                await auctionChan.send(
+                    `🛠️ Only one team left missing a player for Role: **${role}**. \nPlayer **${remainingPlayerName}** automatically assigned to Team **${conversions.convertRoleIdToName([missingTeamId])}**!`
+                );
+            }
+        }
+
+        if (!automaticAssignment) {
+            await promptNextTeam(client, false);
+        }
 
         return true;
     } catch (error) {

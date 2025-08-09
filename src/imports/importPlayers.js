@@ -3,10 +3,6 @@ const path = require('path');
 const dbconnection = require('../database/dbconnection');
 const filePath = path.join(__dirname, 'players.txt');
 
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
-}
-
 async function importPlayers() {
     try {
         const [rows] = await dbconnection.query('SELECT COUNT(*) AS count FROM undraftedplayers');
@@ -31,9 +27,7 @@ async function importPlayers() {
         for (const line of lines) {
             let [name, role] = line.split(',');
 
-            name = capitalizeFirstLetter(name);
-
-            await connection.query(query, [name, role]);
+            await connection.query(query, [name.trim(), role.trim()]);
         }
 
         await connection.commit();
